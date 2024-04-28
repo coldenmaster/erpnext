@@ -23,7 +23,7 @@ erpnext.utils.BarcodeScanner = class BarcodeScanner {
 
 		// optional sound name to play when scan either fails or passes.
 		// see https://frappeframework.com/docs/v14/user/en/python-api/hooks#sounds
-		this.success_sound = opts.play_success_sound;
+		this.success_sound = opts.play_success_sound || "submit";
 		this.fail_sound = opts.play_fail_sound;
 
 		// any API that takes `search_value` as input and returns dictionary as follows
@@ -112,6 +112,7 @@ erpnext.utils.BarcodeScanner = class BarcodeScanner {
 				return;
 			}
 
+            console.log("重复的二维码才会触发这个？ 不是")
 			frappe.run_serially([
 				() => this.set_selector_trigger_flag(data),
 				() => this.set_serial_no(row, serial_no),
@@ -153,20 +154,25 @@ erpnext.utils.BarcodeScanner = class BarcodeScanner {
 				await frappe.model.set_value(row.doctype, row.name, item_data);
 				return value;
 			};
-
+            console.log(row, item_code, barcode, batch_no, serial_no)
 			if (this.prompt_qty) {
+                console.log("this.prompt_qty")
+
 				frappe.prompt(__("Please enter quantity for item {0}", [item_code]), ({value}) => {
 					increment(value).then((value) => resolve(value));
 				});
 			} else if (this.frm.has_items) {
 				this.prepare_item_for_scan(row, item_code, barcode, batch_no, serial_no);
-			} else {
-				increment().then((value) => resolve(value));
-			}
+            } else {
+                if (row.item_group == "原材料") 
+				    return;  // 取消 +1
+                increment().then((value) => resolve(value));
+            }
 		});
 	}
 
 	prepare_item_for_scan(row, item_code, barcode, batch_no, serial_no) {
+        console.log("prepare_item_for_scan")
 		var me = this;
 		this.dialog = new frappe.ui.Dialog({
 			title: __("Scan barcode for item {0}", [item_code]),

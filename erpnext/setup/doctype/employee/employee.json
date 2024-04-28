@@ -97,6 +97,8 @@
   "bio",
   "educational_qualification",
   "education",
+  "education_school",
+  "education_grade",
   "previous_work_experience",
   "external_work_history",
   "history_in_company",
@@ -616,8 +618,8 @@
    "fieldname": "relieving_date",
    "fieldtype": "Date",
    "label": "Relieving Date",
-   "no_copy": 1,
    "mandatory_depends_on": "eval:doc.status == \"Left\"",
+   "no_copy": 1,
    "oldfieldname": "relieving_date",
    "oldfieldtype": "Date"
   },
@@ -817,26 +819,29 @@
    "fieldname": "iban",
    "fieldtype": "Data",
    "label": "IBAN"
+  },
+  {
+   "fieldname": "education_school",
+   "fieldtype": "Data",
+   "label": "Education School"
+  },
+  {
+   "fieldname": "education_grade",
+   "fieldtype": "Data",
+   "label": "Education Grade"
   }
  ],
  "icon": "fa fa-user",
  "idx": 24,
  "image_field": "image",
  "links": [],
- "modified": "2023-10-04 10:57:05.174592",
+ "modified": "2024-02-23 15:59:46.773749",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Employee",
  "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
-  {
-   "email": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Employee"
-  },
   {
    "create": 1,
    "delete": 1,
@@ -860,13 +865,32 @@
    "read": 1,
    "report": 1,
    "role": "HR Manager",
-   "set_user_permissions": 1,
    "share": 1,
    "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Manufacturing Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee"
   }
  ],
  "search_fields": "employee_name",
  "show_name_in_global_search": 1,
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

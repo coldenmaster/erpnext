@@ -16,6 +16,8 @@
   "customer_name",
   "customer_type",
   "customer_group",
+  "short_name",
+  "short_address",
   "column_break0",
   "territory",
   "gender",
@@ -102,7 +104,7 @@
    "set_only_once": 1
   },
   {
-   "depends_on": "eval:doc.customer_type!='Company'",
+   "depends_on": "eval:doc.customer_type=='Individual'",
    "fieldname": "salutation",
    "fieldtype": "Link",
    "label": "Salutation",
@@ -121,7 +123,7 @@
    "search_index": 1
   },
   {
-   "depends_on": "eval:doc.customer_type != 'Company'",
+   "depends_on": "eval:doc.customer_type == 'Individual'",
    "fieldname": "gender",
    "fieldtype": "Link",
    "label": "Gender",
@@ -134,7 +136,7 @@
    "label": "Customer Type",
    "oldfieldname": "customer_type",
    "oldfieldtype": "Select",
-   "options": "Company\nIndividual\nProprietorship\nPartnership",
+   "options": "\nCompany\nIndividual\nHost Customer\nRetail Customer\nProprietorship\nPartnership",
    "reqd": 1
   },
   {
@@ -571,6 +573,16 @@
   {
    "fieldname": "column_break_nwor",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "short_name",
+   "fieldtype": "Data",
+   "label": "Short Name"
+  },
+  {
+   "fieldname": "short_address",
+   "fieldtype": "Data",
+   "label": "Short Address"
   }
  ],
  "icon": "fa fa-user",
@@ -584,7 +596,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2023-10-19 16:56:27.327035",
+ "modified": "2024-02-22 13:17:21.383105",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

@@ -17,3 +17,6 @@ __pycache__
 .vscode/
 node_modules/
 .backportrc.json
+
+# wtt add
+*.lock

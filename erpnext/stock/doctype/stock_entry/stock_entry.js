@@ -940,6 +940,7 @@ erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockControlle
 	}
 
 	scan_barcode() {
+        console.log('扫描条码');
 		frappe.flags.dialog_set = false;
 		const barcode_scanner = new erpnext.utils.BarcodeScanner({frm:this.frm});
 		barcode_scanner.process_scan();
