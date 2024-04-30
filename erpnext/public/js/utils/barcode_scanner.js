@@ -160,7 +160,7 @@ erpnext.utils.BarcodeScanner = class BarcodeScanner {
 				await frappe.model.set_value(row.doctype, row.name, item_data);
 				return value;
 			};
-            console.log(row, item_code, barcode, batch_no, serial_no)
+            console.log("二维码扫描数据 2", row, item_code, barcode, batch_no, serial_no)
 			if (this.prompt_qty) {
 				frappe.prompt(__("Please enter quantity for item {0}", [item_code]), ({ value }) => {
 					increment(value).then((value) => resolve(value));
@@ -169,7 +169,7 @@ erpnext.utils.BarcodeScanner = class BarcodeScanner {
 				this.prepare_item_for_scan(row, item_code, barcode, batch_no, serial_no);
 			} else {
                 if (row.item_group == "原材料") 
-                return;  // 取消 +1
+                    return;  // 取消 +1
 				increment().then((value) => resolve(value));
 			}
 		});
