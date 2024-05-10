@@ -11,6 +11,7 @@ erpnext.buying.setup_buying_controller();
 
 frappe.ui.form.on("Purchase Receipt", {
 	setup: (frm) => {
+        // console.log("采购收货 setup, route_options:", frappe.route_options);
 		frm.make_methods = {
 			"Landed Cost Voucher": () => {
 				let lcv = frappe.model.get_new_doc("Landed Cost Voucher");
@@ -61,12 +62,15 @@ frappe.ui.form.on("Purchase Receipt", {
 		});
 	},
 	onload: function (frm) {
+        // console.log("采购收货 onload", frm);
 		erpnext.queries.setup_queries(frm, "Warehouse", function () {
 			return erpnext.queries.warehouse(frm.doc);
 		});
 	},
 
 	refresh: function (frm) {
+        // console.log("采购收货 refresh");
+
 		if (frm.doc.company) {
 			frm.trigger("toggle_display_account_head");
 		}
@@ -174,17 +178,21 @@ frappe.ui.form.on("Purchase Receipt", {
 		var enabled = erpnext.is_perpetual_inventory_enabled(frm.doc.company);
 		frm.fields_dict["items"].grid.set_column_disp(["cost_center"], enabled);
 	},
+
+
 });
 
 erpnext.stock.PurchaseReceiptController = class PurchaseReceiptController extends (
 	erpnext.buying.BuyingController
 ) {
 	setup(doc) {
+        // console.log("采购收货Controller中 setup");
 		this.setup_posting_date_time_check();
 		super.setup(doc);
 	}
 
 	refresh() {
+        // console.log("采购收货Controller中 refresh");
 		var me = this;
 		super.refresh();
 
@@ -424,9 +432,11 @@ frappe.ui.form.on("Purchase Receipt", "is_subcontracted", function (frm) {
 
 frappe.ui.form.on("Purchase Receipt Item", {
 	item_code: function (frm, cdt, cdn) {
+        // console.log("采购收货内 item_code", frm );
 		var d = locals[cdt][cdn];
 		frappe.db.get_value("Item", { name: d.item_code }, "sample_quantity", (r) => {
 			frappe.model.set_value(cdt, cdn, "sample_quantity", r.sample_quantity);
+			frappe.model.set_value(cdt, cdn, "rejected_warehouse", "");
 			validate_sample_quantity(frm, cdt, cdn);
 		});
 	},
@@ -439,6 +449,28 @@ frappe.ui.form.on("Purchase Receipt Item", {
 	batch_no: function (frm, cdt, cdn) {
 		validate_sample_quantity(frm, cdt, cdn);
 	},
+    // serial_and_batch_bundle: function (frm, cdt, cdn) {
+    //     console.log("erpnext内 序列号组：", cdt, cdn, frm);
+    //     item = locals[cdt][cdn];
+    //     // console.log("item_group", item.item_group, item );
+    //     if (item.item_group === '原材料') {
+    //         // console.log("pr_item", item);
+    //         let sabb_no = item.serial_and_batch_bundle;
+    //         frappe.db.get_doc("Serial and Batch Bundle", sabb_no).then(sabb_doc => {
+    //             // console.log("获取批次号组", sabb_doc);
+    //             frappe.model.set_value(cdt, cdn, "item_code",  sabb_doc.item_code);
+    //             frappe.model.set_value(cdt, cdn, "qty",  sabb_doc.total_qty);
+    //             let batch_on = sabb_doc.entries[0].batch_no;
+
+    //             item.qty = sabb_doc.total_qty;
+    //             item.received_qty = sabb_doc.total_qty;
+    //             item.rejected_warehouse = "";
+    //             item.warehouse = sabb_doc.warehouse;
+    //             frm.refresh_field("items");
+    //         })
+    //     }
+    // },
+
 });
 
 cur_frm.cscript._make_purchase_return = function () {

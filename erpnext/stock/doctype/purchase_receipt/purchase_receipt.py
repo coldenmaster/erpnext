@@ -18,6 +18,8 @@ from erpnext.controllers.accounts_controller import merge_taxes
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.stock.doctype.delivery_note.delivery_note import make_inter_company_transaction
 
+from bbl_api.utils import print_blue, print_cyan, print_red
+
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
 
@@ -227,6 +229,7 @@ class PurchaseReceipt(BuyingController):
 
 		if self.get("items") and self.apply_putaway_rule and not self.get("is_return"):
 			apply_putaway_rule(self.doctype, self.get("items"), self.company)
+		# self.process_steel_batch()
 
 	def validate(self):
 		self.validate_posting_time()
@@ -379,6 +382,55 @@ class PurchaseReceipt(BuyingController):
 		self.repost_future_sle_and_gle()
 		self.set_consumed_qty_in_subcontract_order()
 		self.reserve_stock_for_sales_order()
+
+		# print_blue("pr backend on_submit")
+		self.process_steel_batch()
+
+
+	def process_steel_batch(self):
+		print_blue("pr, backend process, steel batch")
+		""" 处理过程：
+		2. 获取单据的items子表
+		1. 检查是否为原材料类物料
+		3. 获取SABB 解析初batch_no
+		4. 获取steel.doc
+		5. 更改状态为已入库，更改在库重量，根数，
+
+		"""
+		item_docs = self.get("items")
+		if not len(item_docs):
+			return
+		print_blue(f'{item_docs=}')
+		try:
+			for item_doc in item_docs:
+				# if (item_doc.item_grout != "原材料")
+				#	 continue
+				# print_blue(f'{vars(item_doc)=}')
+				if not item_doc.serial_and_batch_bundle:
+					continue
+				if not item_doc.serial_and_batch_bundle.startswith("YGRK"):
+					continue
+				steel_batch_no = item_doc.serial_and_batch_bundle.split("-")[1]
+				
+				steel_doc = frappe.get_doc("Steel Batch", steel_batch_no)
+				# print_cyan(f'{vars(steel_doc)=}')
+				# SABB上重量和三个重量和是否不一样进行报警
+				weight_add = steel_doc.weight + steel_doc.weight2 + steel_doc.weight3
+				if weight_add != item_doc.qty:
+					frappe.throw(f'{weight_add=} 不同于 {item_doc.qty=}')
+				# print_cyan(f'{vars(steel_doc)=}')
+				steel_doc.update({
+					"status": "已入库",
+					"remaining_piece": steel_doc.steel_piece + steel_doc.piece2 + steel_doc.piece3,
+					"remaining_weight": item_doc.qty,
+				})
+				steel_doc.save()
+				frappe.db.commit()
+				# print(f'process end {vars(steel_doc)=}')
+				print_cyan(f'process end {steel_doc.status=}')
+		except Exception as e:
+			print_red("process steel batch error", e)
+   
 
 	def check_next_docstatus(self):
 		submit_rv = frappe.db.sql(

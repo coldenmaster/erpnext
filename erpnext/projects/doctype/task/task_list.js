@@ -25,7 +25,8 @@ frappe.listview_settings["Task"] = {
 		var colors = {
 			Open: "orange",
 			Overdue: "red",
-			"Pending Review": "orange",
+			// "Pending Review": "orange",
+			"Pending Review": "blue",
 			Working: "orange",
 			Completed: "green",
 			Cancelled: "dark grey",

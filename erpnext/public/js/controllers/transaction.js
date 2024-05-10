@@ -496,7 +496,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		item.weight_per_unit = 0;
 		item.weight_uom = '';
 		item.conversion_factor = 0;
-        console.log("-- item: ", item, item.item_group);
+        // console.log("-- item: ", item, item.item_group);
 		if(['Sales Invoice', 'Purchase Invoice'].includes(this.frm.doc.doctype)) {
 			update_stock = cint(me.frm.doc.update_stock);
 			show_batch_dialog = update_stock;
@@ -656,7 +656,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
                                     setTimeout(() => {
                                         if (item.item_group === '原材料' && item.batch_no) {
                                             // 自动设置原材料的 《允收数量》
-                                            console.log("--wtt1 setTimeout: ", item, item.item_group, item.batch_no, me);
+                                            // console.log("--wtt1 setTimeout: ", item, item.item_group, item.batch_no, me);
                                             let sabb_no = 'YGRK-' + item.batch_no;
                                             item.serial_and_batch_bundle = sabb_no;
                                             // 需要提前判断有没有批次码，没有的话查询第一个存在的批次码
@@ -669,12 +669,15 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
                                             frappe.db.get_doc("Serial and Batch Bundle", sabb_no).then(sabb_doc => {
                                                 item.qty = sabb_doc.total_qty;
                                                 item.received_qty = sabb_doc.total_qty;
+                                                item.rejected_warehouse = ""
                                                 me.frm.refresh_field("items");
+                                                frappe.db.get_doc("Steel Batch", item.batch_no).then(sb_doc => {
+                                                    // console.log("sb_doc", sb_doc)
+                                                    item.warehouse = sb_doc.warehouse;
+                                                })                                                
                                             })
                                         }
                                     }, 1);
-                                    console.log("follow setTimeout", item);
-
                                 }
 
 							]);
@@ -792,6 +795,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 	}
 
 	on_submit() {
+        console.log("提交 on_submit, doctype:", this.frm.doc.doctype);
 		if (["Purchase Invoice", "Sales Invoice"].includes(this.frm.doc.doctype)
 			&& !this.frm.doc.update_stock) {
 			return;

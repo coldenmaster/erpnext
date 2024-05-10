@@ -27,8 +27,11 @@ frappe.listview_settings["Purchase Receipt"] = {
 	},
 
 	onload: function (listview) {
+        console.log("log 11")
 		listview.page.add_action_item(__("Purchase Invoice"), () => {
+            console.log("选择后 显示 运行")
 			erpnext.bulk_transaction_processing.create(listview, "Purchase Receipt", "Purchase Invoice");
+
 		});
 	},
 };
