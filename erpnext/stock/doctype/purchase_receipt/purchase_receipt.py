@@ -388,19 +388,18 @@ class PurchaseReceipt(BuyingController):
 
 
 	def process_steel_batch(self):
-		print_blue("pr, backend process, steel batch")
 		""" 处理过程：
 		2. 获取单据的items子表
 		1. 检查是否为原材料类物料
 		3. 获取SABB 解析初batch_no
 		4. 获取steel.doc
 		5. 更改状态为已入库，更改在库重量，根数，
-
 		"""
+		print_blue("pr, backend process, steel batch")
 		item_docs = self.get("items")
 		if not len(item_docs):
 			return
-		print_blue(f'{item_docs=}')
+		# print_blue(f'{item_docs=}')
 		try:
 			for item_doc in item_docs:
 				# if (item_doc.item_grout != "原材料")
@@ -427,9 +426,9 @@ class PurchaseReceipt(BuyingController):
 				steel_doc.save()
 				frappe.db.commit()
 				# print(f'process end {vars(steel_doc)=}')
-				print_cyan(f'process end {steel_doc.status=}')
+				# print_cyan(f'process end {steel_doc.status=}')
 		except Exception as e:
-			print_red("process steel batch error", e)
+			print("process steel batch error", e)
    
 
 	def check_next_docstatus(self):

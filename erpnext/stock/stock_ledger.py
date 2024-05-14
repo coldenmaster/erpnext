@@ -1491,7 +1491,7 @@ def get_stock_ledger_entries(
 			frappe.db.escape(f"%\n{serial_no}\n%"),
 		)
 
-	if not previous_sle.get("posting_date"):
+	if not (previous_sle.get("posting_date") and previous_sle.get("posting_time")):
 		previous_sle["posting_datetime"] = "1900-01-01 00:00:00"
 	else:
 		previous_sle["posting_datetime"] = get_combine_datetime(

@@ -150,7 +150,10 @@ class SerialandBatchBundle(Document):
 		for serial_no in serial_nos:
 			if not serial_no_warehouse.get(serial_no) or serial_no_warehouse.get(serial_no) != self.warehouse:
 				self.throw_error_message(
-					f"Serial No {bold(serial_no)} is not present in the warehouse {bold(self.warehouse)}.",
+					# f"Serial No {bold(serial_no)} is not present in the warehouse {bold(self.warehouse)}.",
+					_("Serial No {0} is not present in the warehouse {1}").format(
+						bold(serial_no),bold(self.warehouse)
+					),
 					SerialNoWarehouseError,
 				)
 
@@ -186,7 +189,10 @@ class SerialandBatchBundle(Document):
 		for data in available_serial_nos:
 			if data.serial_no in serial_nos:
 				self.throw_error_message(
-					f"Serial No {bold(data.serial_no)} is already present in the warehouse {bold(data.warehouse)}.",
+					# f"Serial No {bold(data.serial_no)} is already present in the warehouse {bold(data.warehouse)}.",
+					_("Serial No {0} is already present in the warehouse {1}").format(
+						bold(data.serial_no), bold(data.warehouse)
+					),
 					SerialNoDuplicateError,
 				)
 
@@ -268,10 +274,13 @@ class SerialandBatchBundle(Document):
 
 	def validate_negative_batch(self, batch_no, available_qty):
 		if available_qty < 0:
-			msg = f"""Batch No {bold(batch_no)} of an Item {bold(self.item_code)}
-				has negative stock
-				of quantity {bold(available_qty)} in the
-				warehouse {self.warehouse}"""
+			# msg = f"""Batch No {bold(batch_no)} of an Item {bold(self.item_code)}
+			# 	has negative stock
+			# 	of quantity {bold(available_qty)} in the
+			# 	warehouse {self.warehouse}"""
+			msg = _("Batch No {0} of an Item {1} has negative stock of quantity {2} in the warehouse {3}").format(
+                bold(batch_no), bold(self.item_code), bold(available_qty), self.warehouse
+            )
 
 			frappe.throw(_(msg), BatchNegativeStockError)
 
@@ -518,7 +527,9 @@ class SerialandBatchBundle(Document):
 		precision = row.precision
 		if abs(abs(flt(self.total_qty, precision)) - abs(flt(qty, precision))) > 0.01:
 			self.throw_error_message(
-				f"Total quantity {abs(flt(self.total_qty))} in the Serial and Batch Bundle {bold(self.name)} does not match with the quantity {abs(flt(row.get(qty_field)))} for the Item {bold(self.item_code)} in the {self.voucher_type} # {self.voucher_no}"
+				# f"Total quantity {abs(flt(self.total_qty))} in the Serial and Batch Bundle {bold(self.name)} does not match with the quantity {abs(flt(row.get(qty_field)))} for the Item {bold(self.item_code)} in the {self.voucher_type} # {self.voucher_no}"
+				_("Total quantity {0} in the Serial and Batch Bundle {1} does not match with the quantity {2} for the Item {3} in the {4} # {5}").format(
+					abs(flt(self.total_qty)), bold(self.name), abs(flt(row.get(qty_field))), bold(self.item_code), _(self.voucher_type), self.voucher_no)
 			)
 
 	def get_qty_field(self, row, qty_field=None) -> str:
@@ -588,7 +599,8 @@ class SerialandBatchBundle(Document):
 
 	def validate_serial_and_batch_no(self):
 		if self.item_code and not self.has_serial_no and not self.has_batch_no:
-			msg = f"The Item {self.item_code} does not have Serial No or Batch No"
+			# msg = f"The Item {self.item_code} does not have Serial No or Batch No"
+			msg = _("The Item {0} does not have Serial No or Batch No").format(self.item_code)
 			frappe.throw(_(msg))
 
 		serial_nos = []
@@ -650,7 +662,8 @@ class SerialandBatchBundle(Document):
 		for serial_no, batch_no in serial_batches.items():
 			if correct_batches.get(serial_no) != batch_no:
 				self.throw_error_message(
-					f"Serial No {bold(serial_no)} does not belong to Batch No {bold(batch_no)}"
+					# f"Serial No {bold(serial_no)} does not belong to Batch No {bold(batch_no)}"
+					_("Serial No {0} does not belong to Batch No {1}").format(bold(serial_no), bold(batch_no))
 				)
 
 	def validate_incorrect_serial_nos(self, serial_nos):
@@ -678,7 +691,10 @@ class SerialandBatchBundle(Document):
 		if incorrect_batch_nos:
 			incorrect_batch_nos = ", ".join([d.name for d in incorrect_batch_nos])
 			self.throw_error_message(
-				f"Batch Nos {bold(incorrect_batch_nos)} does not belong to Item {bold(self.item_code)}"
+				# f"Batch Nos {bold(incorrect_batch_nos)} does not belong to Item {bold(self.item_code)}"
+				_("Batch Nos {0} does not belong to Item {1}").format(
+					bold(incorrect_batch_nos), bold(self.item_code)
+				)
 			)
 
 	def validate_serial_and_batch_no_for_returned(self):
@@ -722,13 +738,19 @@ class SerialandBatchBundle(Document):
 			if serial_nos:
 				if not set(current_serial_nos).issubset(set(serial_nos)):
 					self.throw_error_message(
-						f"Serial Nos {bold(', '.join(serial_nos))} are not part of the original document."
+						# f"Serial Nos {bold(', '.join(serial_nos))} are not part of the original document."
+						_("Serial Nos {0} are not part of the original document.").format(
+							bold(', '.join(serial_nos))
+						)
 					)
 
 			if batches:
 				if not set(current_batches).issubset(set(batches)):
 					self.throw_error_message(
-						f"Batch Nos {bold(', '.join(batches))} are not part of the original document."
+						# f"Batch Nos {bold(', '.join(batches))} are not part of the original document."
+						_("Batch Nos {0} are not part of the original document.").format(
+							bold(', '.join(batches))
+						)
 					)
 
 	def get_orignal_document_data(self):
@@ -756,12 +778,13 @@ class SerialandBatchBundle(Document):
 		if serial_nos:
 			for key, value in collections.Counter(serial_nos).items():
 				if value > 1:
-					self.throw_error_message(f"Duplicate Serial No {key} found")
+					# self.throw_error_message(f"Duplicate Serial No {key} found")
+					self.throw_error_message(_("Duplicate Serial No {0} found").fomat(key))
 
 		if batch_nos:
 			for key, value in collections.Counter(batch_nos).items():
 				if value > 1:
-					self.throw_error_message(f"Duplicate Batch No {key} found")
+					self.throw_error_message(_("Duplicate Batch No {0} found").format(key))
 
 	def before_cancel(self):
 		self.delink_serial_and_batch_bundle()
@@ -913,7 +936,8 @@ class SerialandBatchBundle(Document):
 					self.validate_negative_batch(batch_no, available_batches[batch_no])
 
 				self.throw_error_message(
-					f"Batch {bold(batch_no)} is not available in the selected warehouse {self.warehouse}"
+					# f"Batch {bold(batch_no)} is not available in the selected warehouse {self.warehouse}"
+					_("Batch {0} is not available in the selected warehouse {1}").format(bold(batch_no), self.warehouse)
 				)
 
 	def on_cancel(self):
@@ -921,8 +945,10 @@ class SerialandBatchBundle(Document):
 
 	def validate_voucher_no_docstatus(self):
 		if frappe.db.get_value(self.voucher_type, self.voucher_no, "docstatus") == 1:
-			msg = f"""The {self.voucher_type} {bold(self.voucher_no)}
-				is in submitted state, please cancel it first"""
+			# msg = f"""The {self.voucher_type} {bold(self.voucher_no)} is in submitted state, please cancel it first"""
+			msg = _("The {0} {1} is in submitted state, please cancel it first").formate(
+				_(self.voucher_type), bold(self.voucher_no)
+			)
 			frappe.throw(_(msg))
 
 	def on_trash(self):

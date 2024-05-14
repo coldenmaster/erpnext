@@ -4,6 +4,7 @@
 
 import json
 from collections import defaultdict
+import traceback
 
 import frappe
 from frappe import _
@@ -52,6 +53,8 @@ from erpnext.stock.serial_batch_bundle import (
 )
 from erpnext.stock.stock_ledger import NegativeStockError, get_previous_sle, get_valuation_rate
 from erpnext.stock.utils import get_bin, get_incoming_rate
+
+from bbl_api.utils import print_blue, print_cyan, print_red
 
 
 class FinishedGoodError(frappe.ValidationError):
@@ -257,6 +260,52 @@ class StockEntry(StockController):
 			self.set_material_request_transfer_status("In Transit")
 		if self.purpose == "Material Transfer" and self.outgoing_stock_entry:
 			self.set_material_request_transfer_status("Completed")
+
+		self.process_steel_batch()
+
+
+	def process_steel_batch(self):
+		""" 处理过程：
+		1. 检查是否为原材料类物料
+		3. 获取SABB 解析初batch_no
+		4. 获取steel.doc
+		5. 更改状态为已出库，或者半出库，更改在库重量，根数，
+		"""
+		print_blue("stock entry, backend process, steel batch")
+		if self.stock_entry_type != '原钢调拨出库':
+			return
+		item_docs = self.get("items")
+		if not len(item_docs):
+			return
+		try:
+			for item_doc in item_docs:
+				print_blue(f'{vars(item_doc)=}')
+				if not item_doc.serial_and_batch_bundle:
+					continue
+				# 获取批次号组，获取批次号，获取钢材捆批次进行改写
+				sabb_no = item_doc.serial_and_batch_bundle
+				sabb_doc = frappe.get_doc("Serial and Batch Bundle", sabb_no)
+				# print_cyan(f'{vars(sabb_doc.entries[0])=}')
+				steel_doc = frappe.get_doc("Steel Batch", sabb_doc.entries[0].batch_no)
+				# print_cyan(f'{vars(steel_doc)=}')
+				
+				# SABB上重量和三个重量和是否不一样进行报警
+				# weight_add = steel_doc.weight + steel_doc.weight2 + steel_doc.weight3
+				# if weight_add != item_doc.qty:
+				# 	frappe.throw(f'{weight_add=} 不同于 {item_doc.qty=}')
+				# # print_cyan(f'{vars(steel_doc)=}')
+				steel_doc.update({
+					"status": "出完",
+					"remaining_piece": 0,
+					"remaining_weight": 0,
+				})
+				steel_doc.save()
+				frappe.db.commit()
+				# print_cyan(f'process end {steel_doc.status=}')
+		except Exception as e:
+			print("process steel batch error", e)
+		# 	traceback.print_exc()
+   
 
 	def on_cancel(self):
 		self.validate_closed_subcontracting_order()
