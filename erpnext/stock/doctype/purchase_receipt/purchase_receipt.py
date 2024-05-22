@@ -409,7 +409,7 @@ class PurchaseReceipt(BuyingController):
 					continue
 				if not item_doc.serial_and_batch_bundle.startswith("YGRK"):
 					continue
-				steel_batch_no = item_doc.serial_and_batch_bundle.split("-")[1]
+				steel_batch_no = item_doc.serial_and_batch_bundle.replace("YGRK-", "")
 				
 				steel_doc = frappe.get_doc("Steel Batch", steel_batch_no)
 				# print_cyan(f'{vars(steel_doc)=}')
@@ -418,11 +418,12 @@ class PurchaseReceipt(BuyingController):
 				if weight_add != item_doc.qty:
 					frappe.throw(f'{weight_add=} 不同于 {item_doc.qty=}')
 				# print_cyan(f'{vars(steel_doc)=}')
-				steel_doc.update({
-					"status": "已入库",
-					"remaining_piece": steel_doc.steel_piece + steel_doc.piece2 + steel_doc.piece3,
-					"remaining_weight": item_doc.qty,
-				})
+				# steel_doc.update({
+				# 	"status": "已入库",
+				# 	"remaining_piece": steel_doc.steel_piece + steel_doc.piece2 + steel_doc.piece3,
+				# 	"remaining_weight": item_doc.qty,
+				# })
+				steel_doc.status = "已入库"
 				steel_doc.save()
 				frappe.db.commit()
 				# print(f'process end {vars(steel_doc)=}')

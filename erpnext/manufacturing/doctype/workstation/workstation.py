@@ -42,11 +42,8 @@ class Workstation(Document):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
+		from erpnext.manufacturing.doctype.workstation_working_hour.workstation_working_hour import WorkstationWorkingHour
 		from frappe.types import DF
-
-		from erpnext.manufacturing.doctype.workstation_working_hour.workstation_working_hour import (
-			WorkstationWorkingHour,
-		)
 
 		description: DF.Text | None
 		holiday_list: DF.Link | None
@@ -55,7 +52,14 @@ class Workstation(Document):
 		hour_rate_electricity: DF.Currency
 		hour_rate_labour: DF.Currency
 		hour_rate_rent: DF.Currency
+		off_status_image: DF.AttachImage | None
+		on_status_image: DF.AttachImage | None
+		parts_per_hour: DF.Float
+		plant_floor: DF.Link | None
 		production_capacity: DF.Int
+		status: DF.Literal["Production", "Off", "Idle", "Problem", "Maintenance", "Setup"]
+		total_working_hours: DF.Float
+		warehouse: DF.Link | None
 		working_hours: DF.Table[WorkstationWorkingHour]
 		workstation_name: DF.Data
 		workstation_type: DF.Link | None

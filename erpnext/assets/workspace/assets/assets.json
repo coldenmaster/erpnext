@@ -196,7 +196,7 @@
    "type": "Link"
   }
  ],
- "modified": "2024-05-15 14:20:05",
+ "modified": "2024-05-16 10:09:51",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Assets",
@@ -207,7 +207,7 @@
  "quick_lists": [],
  "restrict_to_domain": "",
  "roles": [],
- "sequence_id": 7.0,
+ "sequence_id": 14.0,
  "shortcuts": [
   {
    "label": "Asset",
