@@ -409,22 +409,26 @@ class PurchaseReceipt(BuyingController):
 					continue
 				if not item_doc.serial_and_batch_bundle.startswith("YGRK"):
 					continue
-				steel_batch_no = item_doc.serial_and_batch_bundle.replace("YGRK-", "")
-				
-				steel_doc = frappe.get_doc("Steel Batch", steel_batch_no)
-				# print_cyan(f'{vars(steel_doc)=}')
-				# SABB上重量和三个重量和是否不一样进行报警
-				weight_add = steel_doc.weight + steel_doc.weight2 + steel_doc.weight3
-				if weight_add != item_doc.qty:
-					frappe.throw(f'{weight_add=} 不同于 {item_doc.qty=}')
+				# 获取SABB 解析出batch_nos
+				sabb_doc = frappe.get_doc("Serial and Batch Bundle", item_doc.serial_and_batch_bundle)
+				print_blue(f'{vars(sabb_doc)=}')
+				batchs = sabb_doc.entries
+				for batch in batchs:
+					print_blue(f'{vars(batch)=}')
+					frappe.get_doc("Steel Batch", batch.batch_no).update({
+						"status": "已入库",
+					}).save()
+				# weight_add = steel_doc.weight + steel_doc.weight2 + steel_doc.weight3
+				# if weight_add != item_doc.qty:
+				# 	frappe.throw(f'{weight_add=} 不同于 {item_doc.qty=}')
 				# print_cyan(f'{vars(steel_doc)=}')
 				# steel_doc.update({
 				# 	"status": "已入库",
 				# 	"remaining_piece": steel_doc.steel_piece + steel_doc.piece2 + steel_doc.piece3,
 				# 	"remaining_weight": item_doc.qty,
 				# })
-				steel_doc.status = "已入库"
-				steel_doc.save()
+				# steel_doc.status = "已入库"
+				# steel_doc.save()
 				frappe.db.commit()
 				# print(f'process end {vars(steel_doc)=}')
 				# print_cyan(f'process end {steel_doc.status=}')

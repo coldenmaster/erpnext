@@ -41,6 +41,8 @@ from erpnext.stock.utils import (
 )
 from erpnext.stock.valuation import FIFOValuation, LIFOValuation, round_off_if_near_zero
 
+from bbl_api.utils import print_blue_pp, print_cyan, print_obj
+
 
 class NegativeStockError(frappe.ValidationError):
 	pass
@@ -54,12 +56,12 @@ def make_sl_entries(sl_entries, allow_negative_stock=False, via_landed_cost_vouc
 	"""Create SL entries from SL entry dicts
 
 	args:
-	        - allow_negative_stock: disable negative stock valiations if true
-	        - via_landed_cost_voucher: landed cost voucher cancels and reposts
-	        entries of purchase document. This flag is used to identify if
-	        cancellation and repost is happening via landed cost voucher, in
-	        such cases certain validations need to be ignored (like negative
-	                        stock)
+			- allow_negative_stock: disable negative stock valiations if true
+			- via_landed_cost_voucher: landed cost voucher cancels and reposts
+			entries of purchase document. This flag is used to identify if
+			cancellation and repost is happening via landed cost voucher, in
+			such cases certain validations need to be ignored (like negative
+							stock)
 	"""
 	from erpnext.controllers.stock_controller import future_sle_exists
 
@@ -499,12 +501,12 @@ class update_entries_after:
 
 	:param args: args as dict
 
-	        args = {
-	                "item_code": "ABC",
-	                "warehouse": "XYZ",
-	                "posting_date": "2012-12-12",
-	                "posting_time": "12:00"
-	        }
+			args = {
+					"item_code": "ABC",
+					"warehouse": "XYZ",
+					"posting_date": "2012-12-12",
+					"posting_time": "12:00"
+			}
 	"""
 
 	def __init__(
@@ -555,15 +557,15 @@ class update_entries_after:
 		:Data Structure:
 
 		self.data = {
-		        warehouse1: {
-		                'previus_sle': {},
-		                'qty_after_transaction': 10,
-		                'valuation_rate': 100,
-		                'stock_value': 1000,
-		                'prev_stock_value': 1000,
-		                'stock_queue': '[[10, 100]]',
-		                'stock_value_difference': 1000
-		        }
+				warehouse1: {
+						'previus_sle': {},
+						'qty_after_transaction': 10,
+						'valuation_rate': 100,
+						'stock_value': 1000,
+						'prev_stock_value': 1000,
+						'stock_queue': '[[10, 100]]',
+						'stock_value_difference': 1000
+				}
 		}
 
 		"""
@@ -902,12 +904,17 @@ class update_entries_after:
 		validate negative stock for entries current datetime onwards
 		will not consider cancelled entries
 		"""
+		print_cyan(self.__dict__)
+		print_obj(self)
+		print_blue_pp(sle)
 		diff = self.wh_data.qty_after_transaction + flt(sle.actual_qty) - flt(self.reserved_stock)
+		print_blue_pp(diff)
 		diff = flt(diff, self.flt_precision)  # respect system precision
 
 		if diff < 0 and abs(diff) > 0.0001:
 			# negative stock!
 			exc = sle.copy().update({"diff": diff})
+			print(exc)
 			self.exceptions.setdefault(sle.warehouse, []).append(exc)
 			return False
 		else:
@@ -1441,11 +1448,11 @@ def get_previous_sle(args, for_update=False, extra_cond=None):
 	is called from various transaction like stock entry, reco etc
 
 	args = {
-	        "item_code": "ABC",
-	        "warehouse": "XYZ",
-	        "posting_date": "2012-12-12",
-	        "posting_time": "12:00",
-	        "sle": "name of reference Stock Ledger Entry"
+			"item_code": "ABC",
+			"warehouse": "XYZ",
+			"posting_date": "2012-12-12",
+			"posting_time": "12:00",
+			"sle": "name of reference Stock Ledger Entry"
 	}
 	"""
 	args["name"] = args.get("sle", None) or ""
