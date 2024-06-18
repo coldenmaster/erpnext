@@ -7,6 +7,7 @@ erpnext.landed_cost_taxes_and_charges.setup_triggers("Stock Entry");
 
 frappe.ui.form.on("Stock Entry", {
 	setup: function (frm) {
+        console.log('系统的 stock_entry.js setup()')
 		frm.ignore_doctypes_on_cancel_all = ["Serial and Batch Bundle"];
 
 		frm.set_indicator_formatter("item_code", function (doc) {

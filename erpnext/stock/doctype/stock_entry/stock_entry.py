@@ -261,70 +261,6 @@ class StockEntry(StockController):
 		if self.purpose == "Material Transfer" and self.outgoing_stock_entry:
 			self.set_material_request_transfer_status("Completed")
 
-		self.process_steel_batch()
-
-
-	def process_steel_batch(self):
-		""" 处理过程：
-		1. 检查是否为原材料类物料
-		3. 获取SABB 解析初batch_no
-		4. 获取steel.doc
-		5. 更改状态为已出库，或者半出库，更改在库重量，根数，
-		"""
-		print_blue("stock entry, backend process, steel batch")
-		# if self.stock_entry_type != '原钢调拨出库':
-		# 	return
-		item_docs = self.get("items")
-		try:
-			for item_doc in item_docs:
-				if item_doc.item_group != '原材料':
-					return
-				# print_blue(f'{vars(item_doc)=}')
-				if not item_doc.serial_and_batch_bundle:
-					continue
-				# 获取批次号组，获取批次号，获取钢材捆批次进行改写
-				sabb_no = item_doc.serial_and_batch_bundle
-				sabb_doc = frappe.get_doc("Serial and Batch Bundle", sabb_no)
-				# print_cyan(f'{vars(sabb_doc)=}')
-				# 从SABB中找到 Steel Batch_No/weight, 
-				for entry in sabb_doc.entries:
-					# print_cyan(f'sabb_doc {vars(entry)=}')
-					steel_doc = frappe.get_doc("Steel Batch", entry.batch_no)
-					status = ''
-					remaining_weight = 0
-					remaining_piece = 0
-					out_weight = abs(entry.qty)
-					if steel_doc.remaining_weight == out_weight:
-						status = '出完'
-					else:
-						status = '半出库'
-						remaining_weight = remaining_weight - out_weight
-						# todo 未进行剩余根数的处理
-						remaining_piece = 0
-					steel_doc.update({
-						"status": status,
-						"remaining_piece": remaining_piece,
-						"remaining_weight": remaining_weight,
-					})
-					# print_cyan(f'{vars(steel_doc)=}')
-	 
-					steel_doc.save()
-	
-				
-				# SABB上重量和三个重量和是否不一样进行报警
-				# weight_add = steel_doc.weight + steel_doc.weight2 + steel_doc.weight3
-				# if weight_add != item_doc.qty:
-				# 	frappe.throw(f'{weight_add=} 不同于 {item_doc.qty=}')
-				# # print_cyan(f'{vars(steel_doc)=}')
-
-				frappe.db.commit()
-				# print_cyan(f'process end {steel_doc.status=}')
-		except Exception as e:
-			print("process steel batch error", e)
-			frappe.throw(f"调整原材料记录失败：{e}")
-		# 	traceback.print_exc()
-   
-
 	def on_cancel(self):
 		self.validate_closed_subcontracting_order()
 		self.update_subcontract_order_supplied_items()
@@ -405,6 +341,7 @@ class StockEntry(StockController):
 			"Repack",
 			"Send to Subcontractor",
 			"Material Consumption for Manufacture",
+            # "Bbl Not Op"
 		]
 
 		if self.purpose not in valid_purposes:

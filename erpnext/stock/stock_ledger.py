@@ -904,11 +904,11 @@ class update_entries_after:
 		validate negative stock for entries current datetime onwards
 		will not consider cancelled entries
 		"""
-		print_cyan(self.__dict__)
-		print_obj(self)
-		print_blue_pp(sle)
+		# print_cyan(self.__dict__)
+		# print_obj(self)
+		# print_blue_pp(sle)
 		diff = self.wh_data.qty_after_transaction + flt(sle.actual_qty) - flt(self.reserved_stock)
-		print_blue_pp(diff)
+		# print_blue_pp(diff)
 		diff = flt(diff, self.flt_precision)  # respect system precision
 
 		if diff < 0 and abs(diff) > 0.0001:

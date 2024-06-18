@@ -34,6 +34,9 @@ class ERPNextAddress(Address):
 				title=_("Company Not Linked"),
 			)
 
+	def pr(self):
+		print("dsb150")
+
 	def on_update(self):
 		"""
 		After Address is updated, update the related 'Primary Address' on Customer.
