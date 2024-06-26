@@ -18,8 +18,6 @@ from erpnext.controllers.accounts_controller import merge_taxes
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.stock.doctype.delivery_note.delivery_note import make_inter_company_transaction
 
-from bbl_api.utils import print_blue, print_cyan, print_red
-
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
 
@@ -383,58 +381,6 @@ class PurchaseReceipt(BuyingController):
 		self.set_consumed_qty_in_subcontract_order()
 		self.reserve_stock_for_sales_order()
 
-		# print_blue("pr backend on_submit")
-		self.process_steel_batch()
-
-
-	def process_steel_batch(self):
-		""" 处理过程：
-		2. 获取单据的items子表
-		1. 检查是否为原材料类物料
-		3. 获取SABB 解析初batch_no
-		4. 获取steel.doc
-		5. 更改状态为已入库，更改在库重量，根数，
-		"""
-		print_blue("pr, backend process, steel batch")
-		item_docs = self.get("items")
-		if not len(item_docs):
-			return
-		# print_blue(f'{item_docs=}')
-		try:
-			for item_doc in item_docs:
-				# if (item_doc.item_grout != "原材料")
-				#	 continue
-				# print_blue(f'{vars(item_doc)=}')
-				if not item_doc.serial_and_batch_bundle:
-					continue
-				if not item_doc.serial_and_batch_bundle.startswith("YGRK"):
-					continue
-				# 获取SABB 解析出batch_nos
-				sabb_doc = frappe.get_doc("Serial and Batch Bundle", item_doc.serial_and_batch_bundle)
-				print_blue(f'{vars(sabb_doc)=}')
-				batchs = sabb_doc.entries
-				for batch in batchs:
-					print_blue(f'{vars(batch)=}')
-					frappe.get_doc("Steel Batch", batch.batch_no).update({
-						"status": "已入库",
-					}).save()
-				# weight_add = steel_doc.weight + steel_doc.weight2 + steel_doc.weight3
-				# if weight_add != item_doc.qty:
-				# 	frappe.throw(f'{weight_add=} 不同于 {item_doc.qty=}')
-				# print_cyan(f'{vars(steel_doc)=}')
-				# steel_doc.update({
-				# 	"status": "已入库",
-				# 	"remaining_piece": steel_doc.steel_piece + steel_doc.piece2 + steel_doc.piece3,
-				# 	"remaining_weight": item_doc.qty,
-				# })
-				# steel_doc.status = "已入库"
-				# steel_doc.save()
-				frappe.db.commit()
-				# print(f'process end {vars(steel_doc)=}')
-				# print_cyan(f'process end {steel_doc.status=}')
-		except Exception as e:
-			print("process steel batch error", e)
-   
 
 	def check_next_docstatus(self):
 		submit_rv = frappe.db.sql(

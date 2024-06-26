@@ -418,6 +418,7 @@ frappe.ui.form.on("Work Order", {
 				},
 				freeze: true,
 				callback: function (r) {
+                    log("item, 后端返回", r.message);
 					if (r.message) {
 						frm.set_value("sales_order", "");
 						frm.trigger("set_sales_order");
