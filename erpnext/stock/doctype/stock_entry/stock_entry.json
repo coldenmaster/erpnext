@@ -127,7 +127,7 @@
    "label": "Purpose",
    "oldfieldname": "purpose",
    "oldfieldtype": "Select",
-   "options": "Material Issue\nMaterial Receipt\nMaterial Transfer\nMaterial Transfer for Manufacture\nMaterial Consumption for Manufacture\nManufacture\nRepack\nSend to Subcontractor",
+   "options": "Material Issue\nMaterial Receipt\nMaterial Transfer\nMaterial Transfer for Manufacture\nMaterial Consumption for Manufacture\nManufacture\nRepack\nSend to Subcontractor\nBbl Not Op",
    "read_only": 1,
    "search_index": 1
   },

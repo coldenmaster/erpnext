@@ -227,6 +227,7 @@ class PurchaseReceipt(BuyingController):
 
 		if self.get("items") and self.apply_putaway_rule and not self.get("is_return"):
 			apply_putaway_rule(self.doctype, self.get("items"), self.company)
+		# self.process_steel_batch()
 
 	def validate(self):
 		self.validate_posting_time()
@@ -380,6 +381,7 @@ class PurchaseReceipt(BuyingController):
 		self.repost_future_sle_and_gle()
 		self.set_consumed_qty_in_subcontract_order()
 		self.reserve_stock_for_sales_order()
+
 
 	def check_next_docstatus(self):
 		submit_rv = frappe.db.sql(

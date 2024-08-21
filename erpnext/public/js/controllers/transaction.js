@@ -496,7 +496,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		item.weight_per_unit = 0;
 		item.weight_uom = '';
 		item.conversion_factor = 0;
-
+        // console.log("-- item: ", item, item.item_group);
 		if(['Sales Invoice', 'Purchase Invoice'].includes(this.frm.doc.doctype)) {
 			update_stock = cint(me.frm.doc.update_stock);
 			show_batch_dialog = update_stock;
@@ -618,6 +618,9 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 											});
 								},
 								() => {
+                                    if (item.item_group === '原材料') {
+                                        return;
+                                    }
 									if(show_batch_dialog && !frappe.flags.hide_serial_batch_dialog && !frappe.flags.dialog_set) {
 										var d = locals[cdt][cdn];
 										$.each(r.message, function(k, v) {
@@ -650,7 +653,35 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 								() => {
 									var company_currency = me.get_company_currency();
 									me.update_item_grid_labels(company_currency);
-								}
+								},
+                                () => {
+                                    setTimeout(() => {
+                                        if (item.item_group === '原材料' && item.batch_no) {
+                                            // 自动设置原材料的 《允收数量》
+                                            // console.log("--wtt1 setTimeout: ", item, item.item_group, item.batch_no, me);
+                                            let sabb_no = 'YGRK-' + item.batch_no;
+                                            item.serial_and_batch_bundle = sabb_no;
+                                            // 需要提前判断有没有批次码，没有的话查询第一个存在的批次码
+                                            // 取得所有的批次码，依次注入列表
+                                            // 去除已经使用过的批次码，已经提交过（在采购入库里获取）
+                                            // frappe.db.get_value('Item', item.item_code, 'has_batch_no', function(value) {
+                                            //     if (value.has_batch_no) {
+    
+                                            // }
+                                            frappe.db.get_doc("Serial and Batch Bundle", sabb_no).then(sabb_doc => {
+                                                item.qty = sabb_doc.total_qty;
+                                                item.received_qty = sabb_doc.total_qty;
+                                                item.rejected_warehouse = ""
+                                                me.frm.refresh_field("items");
+                                                frappe.db.get_doc("Steel Batch", item.batch_no).then(sb_doc => {
+                                                    // console.log("sb_doc", sb_doc)
+                                                    item.warehouse = sb_doc.warehouse;
+                                                })                                                
+                                            })
+                                        }
+                                    }, 1);
+                                }
+
 							]);
 						}
 					}
@@ -766,6 +797,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 	}
 
 	on_submit() {
+        console.log("提交 on_submit, doctype:", this.frm.doc.doctype);
 		if (["Purchase Invoice", "Sales Invoice"].includes(this.frm.doc.doctype)
 			&& !this.frm.doc.update_stock) {
 			return;

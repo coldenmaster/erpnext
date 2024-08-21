@@ -4,6 +4,7 @@
 
 import json
 from collections import defaultdict
+import traceback
 
 import frappe
 from frappe import _
@@ -52,6 +53,8 @@ from erpnext.stock.serial_batch_bundle import (
 )
 from erpnext.stock.stock_ledger import NegativeStockError, get_previous_sle, get_valuation_rate
 from erpnext.stock.utils import get_bin, get_incoming_rate
+
+from bbl_api.utils import print_blue, print_cyan, print_red
 
 
 class FinishedGoodError(frappe.ValidationError):
@@ -337,6 +340,7 @@ class StockEntry(StockController):
 			"Repack",
 			"Send to Subcontractor",
 			"Material Consumption for Manufacture",
+            # "Bbl Not Op"
 		]
 
 		if self.purpose not in valid_purposes:
